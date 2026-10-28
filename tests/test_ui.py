@@ -3,9 +3,9 @@ from pathlib import Path
 
 import pytest
 
-from itk.context import Context, run_command
-from itk.model import Attempt, StepResult
-from itk.ui import ConsoleUI
+from interface_test_kit.context import Context, run_command
+from interface_test_kit.model import Attempt, StepResult
+from interface_test_kit.ui import ConsoleUI
 
 
 def console(text: str) -> tuple[ConsoleUI, io.StringIO]:
@@ -75,7 +75,7 @@ def test_run_command_timeout():
 
 
 def test_console_no_started_line_when_not_tty():
-    from itk.profile import Step
+    from interface_test_kit.profile import Step
     ui, out = console("")
     ui.step_started(Step("usb", "USB", "usb", None, None, 1))
     assert out.getvalue() == ""
@@ -87,7 +87,7 @@ class TTY(io.StringIO):
 
 
 def test_console_tty_overwrites_started_line_and_breaks_for_prompts():
-    from itk.profile import Step
+    from interface_test_kit.profile import Step
     out = TTY()
     ui = ConsoleUI(stdin=io.StringIO("y\n"), stdout=out)
     ui.step_started(Step("led", "Power LED", "confirm", None, None, 1))

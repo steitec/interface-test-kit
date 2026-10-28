@@ -3,12 +3,12 @@ import socket
 
 import pytest
 
-from itk.checks import STEP_TYPES
-from itk.checks.can import TEST_FRAMES, CanConfig, open_socketcan
-from itk.context import CommandResult, Context
-from itk.sim.can import SimCanNetwork
-from itk.sim.fakes import FakeRunner, add_netdev
-from itk.ui import ScriptedUI
+from interface_test_kit.checks import STEP_TYPES
+from interface_test_kit.checks.can import TEST_FRAMES, CanConfig, open_socketcan
+from interface_test_kit.context import CommandResult, Context
+from interface_test_kit.sim.can import SimCanNetwork
+from interface_test_kit.sim.fakes import FakeRunner, add_netdev
+from interface_test_kit.ui import ScriptedUI
 
 CAN = STEP_TYPES["can"]
 

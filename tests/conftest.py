@@ -4,9 +4,9 @@ from __future__ import annotations
 
 from dataclasses import dataclass, field
 
-from itk.checks import CheckType, fields, register
-from itk.model import Attempt
-from itk.profile import Profile, Step
+from interface_test_kit.checks import CheckType, fields, register
+from interface_test_kit.model import Attempt
+from interface_test_kit.profile import Profile, Step
 
 
 @dataclass(frozen=True)
@@ -36,7 +36,7 @@ register("fake", CheckType(parse=_parse, run=_run,
 
 
 def fake_step(name: str, *outcomes: str, equipment: str | None = None) -> Step:
-    from itk.profile import slug
+    from interface_test_kit.profile import slug
     return Step(slug(name), name, "fake", FakeConfig(list(outcomes)), equipment, 1)
 
 

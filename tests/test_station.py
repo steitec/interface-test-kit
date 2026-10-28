@@ -2,7 +2,7 @@ from pathlib import Path
 
 import pytest
 
-from itk.station import Station, load_station
+from interface_test_kit.station import Station, load_station
 
 
 def test_station_defaults(tmp_path):

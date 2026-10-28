@@ -71,7 +71,7 @@ def _demo(args) -> int:
             print(f"  {name:<16} {text}")
         return 0
     fault = None if args.fault == "none" else args.fault
-    profile = load_profile(Path(str(resources.files("itk"))) / "profiles" / "demo.yaml")
+    profile = load_profile(Path(str(resources.files("interface_test_kit"))) / "profiles" / "demo.yaml")
     with tempfile.TemporaryDirectory(prefix="itk-demo-") as tmp:
         root = Path(tmp)
         out = Path(args.out)

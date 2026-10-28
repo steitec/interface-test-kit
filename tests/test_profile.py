@@ -3,8 +3,8 @@ from pathlib import Path
 
 import pytest
 
-from itk.cli import main
-from itk.profile import ProfileError, load_profile, load_profiles
+from interface_test_kit.cli import main
+from interface_test_kit.profile import ProfileError, load_profile, load_profiles
 
 
 def write(tmp_path: Path, text: str, name: str = "p.yaml") -> Path:

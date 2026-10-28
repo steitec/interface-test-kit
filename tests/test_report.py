@@ -4,10 +4,10 @@ from datetime import datetime, timezone
 
 import pytest
 
-from itk.cli import main
-from itk.model import Attempt, Measurement, RunResult, StepResult
-from itk.report import folder_name, render_text, report_reachable, sync_spool, write_run
-from itk.station import Station
+from interface_test_kit.cli import main
+from interface_test_kit.model import Attempt, Measurement, RunResult, StepResult
+from interface_test_kit.report import folder_name, render_text, report_reachable, sync_spool, write_run
+from interface_test_kit.station import Station
 
 T0 = datetime(2026, 10, 28, 9, 0, 0, tzinfo=timezone.utc)
 

@@ -2,11 +2,11 @@ import shutil
 
 import pytest
 
-from itk.checks import STEP_TYPES
-from itk.checks.ethernet import EthernetConfig
-from itk.context import CommandResult, Context, run_command
-from itk.sim.fakes import FakeRunner, add_netdev
-from itk.ui import ScriptedUI
+from interface_test_kit.checks import STEP_TYPES
+from interface_test_kit.checks.ethernet import EthernetConfig
+from interface_test_kit.context import CommandResult, Context, run_command
+from interface_test_kit.sim.fakes import FakeRunner, add_netdev
+from interface_test_kit.ui import ScriptedUI
 
 ETH = STEP_TYPES["ethernet"]
 

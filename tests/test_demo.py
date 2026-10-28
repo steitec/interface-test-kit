@@ -3,10 +3,10 @@ from pathlib import Path
 
 import pytest
 
-from itk.cli import main
-from itk.profile import load_profile
-from itk.sim.world import FAULTS
-from itk.station import load_station
+from interface_test_kit.cli import main
+from interface_test_kit.profile import load_profile
+from interface_test_kit.sim.world import FAULTS
+from interface_test_kit.station import load_station
 
 EXPECTED_STEP = {"serial_cts": "serial-1", "serial_data": "serial-1", "usb_missing": "usb",
                  "usb_slow": "usb", "usb_wrong_speed": "usb", "usb_no_label": "usb",
@@ -64,8 +64,8 @@ def test_examples_are_valid():
 def test_autoui_breaks_pending_step_line_on_tty():
     import io
 
-    from itk.profile import Step
-    from itk.sim.world import AutoUI
+    from interface_test_kit.profile import Step
+    from interface_test_kit.sim.world import AutoUI
 
     class TTY(io.StringIO):
         def isatty(self):

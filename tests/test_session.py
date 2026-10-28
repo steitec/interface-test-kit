@@ -4,11 +4,11 @@ import textwrap
 
 import pytest
 
-from itk.cli import main
-from itk.context import Context
-from itk.session import run_session
-from itk.station import Station
-from itk.ui import ScriptedUI
+from interface_test_kit.cli import main
+from interface_test_kit.context import Context
+from interface_test_kit.session import run_session
+from interface_test_kit.station import Station
+from interface_test_kit.ui import ScriptedUI
 
 HINT = "Same failure on several units? Run the equipment self-test."
 

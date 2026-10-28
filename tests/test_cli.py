@@ -1,6 +1,6 @@
 import pytest
 
-from itk.cli import main
+from interface_test_kit.cli import main
 
 
 def test_version(capsys):

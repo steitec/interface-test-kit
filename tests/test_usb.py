@@ -2,11 +2,11 @@ import os
 
 import pytest
 
-from itk.checks import STEP_TYPES
-from itk.checks.usb import UsbConfig, find_sticks
-from itk.context import Context
-from itk.sim.fakes import FakeRunner, add_usb_stick, lsblk_result
-from itk.ui import ScriptedUI
+from interface_test_kit.checks import STEP_TYPES
+from interface_test_kit.checks.usb import UsbConfig, find_sticks
+from interface_test_kit.context import Context
+from interface_test_kit.sim.fakes import FakeRunner, add_usb_stick, lsblk_result
+from interface_test_kit.ui import ScriptedUI
 
 USB = STEP_TYPES["usb"]
 
@@ -114,7 +114,7 @@ def test_readonly_mount(tmp_path):
 
 
 def test_corrupt_readback(tmp_path, monkeypatch):
-    import itk.checks.usb as usb
+    import interface_test_kit.checks.usb as usb
     nodes = [add_usb_stick(tmp_path, "sdb1", "ITKTEST", "1-1", 5000, "/media/itk1")]
     real = usb._read_back
 
@@ -154,7 +154,7 @@ def test_stick_unmounted_before_write_is_not_written(tmp_path):
 
 
 def test_mountpoint_on_other_device_is_not_written(tmp_path, monkeypatch):
-    import itk.checks.usb as usb
+    import interface_test_kit.checks.usb as usb
     nodes = [add_usb_stick(tmp_path, "sdb1", "ITKTEST", "1-1", 5000, "/media/itk1")]
     monkeypatch.setattr(usb, "_same_device", lambda ctx, stick: False)
     attempt = run(cfg(count=1), world(tmp_path, nodes))

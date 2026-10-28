@@ -1,6 +1,6 @@
 from datetime import datetime, timezone
 
-from itk.model import Attempt, Measurement, RunResult, StepResult
+from interface_test_kit.model import Attempt, Measurement, RunResult, StepResult
 
 
 def test_measurement_limits():

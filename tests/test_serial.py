@@ -3,11 +3,11 @@ import threading
 
 import pytest
 
-from itk.checks import STEP_TYPES
-from itk.checks.serial import LOOPBACK_TYPES, SerialConfig, open_pyserial
-from itk.context import Context
-from itk.sim.serial import SimLoopback
-from itk.ui import ScriptedUI
+from interface_test_kit.checks import STEP_TYPES
+from interface_test_kit.checks.serial import LOOPBACK_TYPES, SerialConfig, open_pyserial
+from interface_test_kit.context import Context
+from interface_test_kit.sim.serial import SimLoopback
+from interface_test_kit.ui import ScriptedUI
 
 SERIAL = STEP_TYPES["serial"]
 

@@ -1,9 +1,9 @@
 import pytest
 from conftest import fake_step, make_profile
 
-from itk.context import Context
-from itk.runner import CONFIRM_INFO, INTERNAL_ERROR, RETRY_PROMPT, run_step, run_steps
-from itk.ui import ScriptedUI
+from interface_test_kit.context import Context
+from interface_test_kit.runner import CONFIRM_INFO, INTERNAL_ERROR, RETRY_PROMPT, run_step, run_steps
+from interface_test_kit.ui import ScriptedUI
 
 
 @pytest.mark.parametrize("outcomes,answers,status,n", [
