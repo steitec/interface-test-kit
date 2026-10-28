@@ -5,6 +5,7 @@ from __future__ import annotations
 import json
 import os
 import random
+import stat
 from dataclasses import dataclass
 from functools import lru_cache
 from pathlib import Path
@@ -113,8 +114,33 @@ def _block(i: int) -> bytes:
     return i.to_bytes(8, "big") + _payload()
 
 
+def _same_device(ctx, stick: Stick) -> bool:
+    """True if the mountpoint really is the stick's filesystem right now."""
+    mountpoint = ctx.path(stick.mountpoint)
+    device = ctx.path(stick.device)
+    if not device.exists():
+        # Only the simulated worlds under a fake root have no device nodes.
+        return Path(ctx.root) != Path("/")
+    try:
+        return (stat.S_ISBLK(os.stat(device).st_mode) and os.path.ismount(mountpoint)
+                and os.stat(mountpoint).st_dev == os.stat(device).st_rdev)
+    except OSError:
+        return False
+
+
+def _still_mounted(ctx, cfg: UsbConfig, stick: Stick) -> bool:
+    """Ask lsblk again right before writing: the stick may have been pulled meanwhile."""
+    try:
+        now = {s.device: s.mountpoint for s in find_sticks(cfg, ctx)}
+    except (RuntimeError, ValueError):
+        return False
+    return now.get(stick.device) == stick.mountpoint and _same_device(ctx, stick)
+
+
 def _write_file(path: Path, size_mb: int, clock) -> float:
-    fd = os.open(path, os.O_WRONLY | os.O_CREAT | os.O_TRUNC, 0o644)
+    if os.path.lexists(path):  # never follow a link someone left on the stick
+        os.unlink(path)
+    fd = os.open(path, os.O_WRONLY | os.O_CREAT | os.O_EXCL | os.O_NOFOLLOW, 0o644)
     try:
         t0 = clock()
         for i in range(size_mb):
@@ -127,7 +153,7 @@ def _write_file(path: Path, size_mb: int, clock) -> float:
 
 def _read_back(path: Path, size_mb: int, clock) -> tuple[float, int | None]:
     """Returns (seconds, index of the first bad block or None)."""
-    fd = os.open(path, os.O_RDONLY)
+    fd = os.open(path, os.O_RDONLY | os.O_NOFOLLOW)
     try:
         os.posix_fadvise(fd, 0, 0, os.POSIX_FADV_DONTNEED)
         bad = None
@@ -144,6 +170,9 @@ def _read_back(path: Path, size_mb: int, clock) -> tuple[float, int | None]:
 def _test_stick(stick: Stick, cfg: UsbConfig, ctx, details: list[str]) -> tuple[str | None, list[Measurement]]:
     """Returns (unit-mode problem or None, measurements). Never writes outside the mountpoint."""
     where = stick.usb_port or stick.device
+    if not _still_mounted(ctx, cfg, stick):
+        details.append(f"{stick.device}: not mounted at {stick.mountpoint} any more")
+        return f"USB: test stick in port {where} is not mounted", []
     path = ctx.path(stick.mountpoint) / TEST_FILE
     measurements = []
     try:

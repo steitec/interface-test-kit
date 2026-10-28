@@ -131,3 +131,32 @@ def test_lsblk_failure(tmp_path):
     ctx = Context(root=tmp_path, run=FakeRunner({}))
     attempt = run(cfg(), ctx)
     assert attempt.status == "FAIL" and any("lsblk" in d for d in attempt.details)
+
+
+def test_symlink_test_file_is_not_followed(tmp_path):
+    nodes = [add_usb_stick(tmp_path, "sdb1", "ITKTEST", "1-1", 5000, "/media/itk1")]
+    victim = tmp_path / "etc-passwd"
+    victim.write_text("precious")
+    (tmp_path / "media/itk1/itk-test.bin").symlink_to(victim)
+    attempt = run(cfg(count=1), world(tmp_path, nodes))
+    assert attempt.status == "PASS", attempt
+    assert victim.read_text() == "precious"
+
+
+def test_stick_unmounted_before_write_is_not_written(tmp_path):
+    nodes = [add_usb_stick(tmp_path, "sdb1", "ITKTEST", "1-1", 5000, "/media/itk1")]
+    gone = [add_usb_stick(tmp_path / "x", "sdb1", "ITKTEST", "1-1", 5000, None)]
+    answers = iter([lsblk_result(nodes), lsblk_result(gone)])
+    ctx = Context(root=tmp_path, run=FakeRunner({"lsblk -J": lambda args: next(answers)}))
+    attempt = run(cfg(count=1), ctx)
+    assert attempt.message == "USB: test stick in port 1-1 is not mounted"
+    assert not list((tmp_path / "media").rglob("*.bin"))
+
+
+def test_mountpoint_on_other_device_is_not_written(tmp_path, monkeypatch):
+    import itk.checks.usb as usb
+    nodes = [add_usb_stick(tmp_path, "sdb1", "ITKTEST", "1-1", 5000, "/media/itk1")]
+    monkeypatch.setattr(usb, "_same_device", lambda ctx, stick: False)
+    attempt = run(cfg(count=1), world(tmp_path, nodes))
+    assert attempt.message == "USB: test stick in port 1-1 is not mounted"
+    assert not list((tmp_path / "media").rglob("*.bin"))
