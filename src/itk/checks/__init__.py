@@ -30,7 +30,11 @@ def register(name: str, check: CheckType) -> None:
 
 
 def fields(raw: dict, required: set[str], optional: dict[str, Any]) -> dict:
-    """Check the keys of a step's type-specific fields and fill in defaults."""
+    """Check the keys of a step's type-specific fields and fill in defaults.
+
+    The step's ``name`` is always passed along, so checks can use it in messages.
+    """
+    optional = {"name": "", **optional}
     for key in raw:
         if key not in required and key not in optional:
             raise ValueError(f"unknown field '{key}'")
@@ -40,4 +44,4 @@ def fields(raw: dict, required: set[str], optional: dict[str, Any]) -> dict:
     return {**optional, **raw}
 
 
-from . import confirm  # noqa: E402,F401  (registers itself)
+from . import confirm, serial  # noqa: E402,F401  (register themselves)

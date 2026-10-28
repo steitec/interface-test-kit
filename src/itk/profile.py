@@ -85,7 +85,8 @@ def _parse_step(index: int, raw: Any, line: int | None) -> Step:
         name = str(raw["name"])
         step_id = str(raw.get("id") or slug(name))
         equipment = raw.get("equipment")
-        config = check.parse({k: v for k, v in raw.items() if k not in _STEP_COMMON})
+        config = check.parse({"name": name,
+                              **{k: v for k, v in raw.items() if k not in _STEP_COMMON}})
     except ValueError as e:
         raise ProfileError(f"{label}: {e}", line) from None
     return Step(step_id, name, raw["type"], config,
