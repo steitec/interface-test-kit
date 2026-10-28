@@ -1,0 +1,55 @@
+[build-system]
+requires = ["setuptools>=77"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "interface-test-kit"
+version = "0.1.0"
+description = "Operator-guided interface test for Linux embedded and panel PCs: serial with handshake, USB, Ethernet and CAN, with per-variant profiles and reports"
+readme = "README.md"
+license = "MIT"
+license-files = ["LICENSE"]
+authors = [{ name = "Ralf Steinert" }]
+requires-python = ">=3.10"
+dependencies = [
+    "pyserial>=3.5",
+    "pyyaml>=6.0",
+]
+keywords = ["embedded", "production test", "end-of-line test", "rma", "serial", "rs232", "usb", "ethernet", "can", "socketcan", "loopback"]
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Environment :: Console",
+    "Intended Audience :: Manufacturing",
+    "Intended Audience :: Developers",
+    "Operating System :: POSIX :: Linux",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "Topic :: Software Development :: Embedded Systems",
+    "Topic :: Software Development :: Testing",
+    "Topic :: System :: Hardware",
+]
+
+[project.urls]
+Homepage = "https://github.com/steitec/interface-test-kit"
+Repository = "https://github.com/steitec/interface-test-kit"
+Changelog = "https://github.com/steitec/interface-test-kit/blob/main/CHANGELOG.md"
+Issues = "https://github.com/steitec/interface-test-kit/issues"
+
+[project.optional-dependencies]
+dev = ["pytest>=8", "build>=1.2"]
+
+[project.scripts]
+itk = "itk.cli:main"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.setuptools.package-data]
+itk = ["profiles/*.yaml"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+markers = ["vcan: needs a vcan0 interface"]
