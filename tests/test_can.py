@@ -94,7 +94,7 @@ def test_hardware_sets_bitrate_and_checks_state(tmp_path):
 def test_bus_off_fails(tmp_path):
     runner = FakeRunner({"ip link": CommandResult(0, "", ""), "ip -d": ip_state("BUS-OFF")})
     attempt = run(cfg(), sim_ctx(tmp_path, runner=runner, hardware=True))
-    assert attempt.message == "CAN: can0 in error state BUS-OFF"
+    assert attempt.message.startswith("CAN: can0 in error state BUS-OFF. Check the CAN cable")
 
 
 def test_bitrate_command_failure(tmp_path):
@@ -123,3 +123,35 @@ def test_vcan_roundtrip():
         pytest.skip("no vcan0 interface")
     attempt = run(cfg(pair=("vcan0", "vcan0")), Context(open_can=open_socketcan))
     assert attempt.status == "PASS", attempt
+
+
+def test_error_warning_after_cable_fix_passes(tmp_path):
+    # frames got through both ways; a TX error counter still counting down is fine
+    runner = FakeRunner({"ip link": CommandResult(0, "", ""), "ip -d": ip_state("ERROR-WARNING")})
+    attempt = run(cfg(), sim_ctx(tmp_path, runner=runner, hardware=True))
+    assert attempt.status == "PASS", attempt
+
+
+def test_error_passive_fails_with_operator_advice(tmp_path):
+    runner = FakeRunner({"ip link": CommandResult(0, "", ""), "ip -d": ip_state("ERROR-PASSIVE")})
+    attempt = run(cfg(), sim_ctx(tmp_path, runner=runner, hardware=True))
+    assert attempt.message == ("CAN: can0 in error state ERROR-PASSIVE. "
+                               "Check the CAN cable and termination, then retry.")
+
+
+def test_stale_frames_from_earlier_attempt_are_ignored(tmp_path):
+    net = SimCanNetwork()
+    ctx = sim_ctx(tmp_path, net)
+    original = net.open
+
+    def open_with_stale(iface):
+        bus = original(iface)
+        bus.queue.append((0x7FF, b"old", False))  # left over from the attempt without cable
+        return bus
+    ctx.open_can = open_with_stale
+    assert run(cfg(), ctx).status == "PASS"
+
+
+def test_same_interface_twice_is_rejected():
+    with pytest.raises(ValueError, match="two different"):
+        CAN.parse({"name": "CAN", "pair": ["can0", "can0"]})

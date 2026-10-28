@@ -77,7 +77,7 @@ Report saved: reports/EPC-24-00137_20261028-134954
 | `serial` | Test pattern (all 256 byte values plus random data) at every baud rate in the profile, then each handshake line of the loopback plug in both states, with the other outputs held opposite so shorts show up. Reports the exact line, e.g. `DTR->DSR`. |
 | `usb` | Number of mounted test sticks, optionally which port each one is in, the negotiated USB speed (catches a USB 3 port running at USB 2), and a write/read/compare of a test file with throughput limits. |
 | `ethernet` | Link, negotiated speed and duplex, ping to a counterpart with a packet-loss limit. |
-| `can` | Two CAN ports wired together exchange standard and extended frames in both directions; on real CAN hardware the bitrate is set first and the controller must end in `ERROR-ACTIVE`. |
+| `can` | Two CAN ports wired together exchange standard and extended frames in both directions; on real CAN hardware the bitrate is set first and the controller must end in `ERROR-ACTIVE` or `ERROR-WARNING`. |
 | `confirm` | A manual check: the operator looks at something and answers Y/N. |
 
 **Retries:** loose plugs happen. When a step fails, the operator can retry it.

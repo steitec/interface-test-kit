@@ -16,6 +16,10 @@ from . import CheckType, fields, register
 TEST_FRAMES = [(0x123, b"", False), (0x123, bytes([0x55]), False),
                (0x7FF, bytes(range(8)), False), (0x1ABCDE0, bytes([0xAA] * 8), True)]
 
+# ERROR-WARNING is fine: after a failed attempt (cable missing) the TX error counter
+# only counts down by one per good frame, so it stays above 96 for a while.
+GOOD_STATES = ("ERROR-ACTIVE", "ERROR-WARNING")
+
 _FRAME = struct.Struct("=IB3x8s")
 _EFF_FLAG = 0x80000000
 _RTR_FLAG = 0x40000000
@@ -71,6 +75,9 @@ def parse(raw: dict) -> CanConfig:
     pair = f["pair"]
     if not isinstance(pair, list) or len(pair) != 2:
         raise ValueError("pair: must list exactly two CAN interfaces, e.g. [can0, can1]")
+    if pair[0] == pair[1]:
+        # one interface talking to itself passes through the kernel's local loopback, no cable needed
+        raise ValueError("pair: must name two different CAN interfaces")
     rate = f["bitrate"]
     if rate is not None and (isinstance(rate, bool) or not isinstance(rate, int) or rate <= 0):
         raise ValueError("bitrate: must be a positive whole number, e.g. 500000")
@@ -117,6 +124,13 @@ def _state(ctx, iface: str) -> str | None:
         return None
 
 
+def _drain(bus: CanBus) -> None:
+    """Drop frames still queued from an earlier attempt."""
+    for _ in range(100):
+        if bus.recv(0.05) is None:
+            return
+
+
 def _exchange(tx: CanBus, rx: CanBus, timeout: float) -> str | None:
     """Send every test frame from tx to rx. Returns 'missing', 'corrupt' or None."""
     for frame in TEST_FRAMES:
@@ -143,6 +157,8 @@ def run(config: CanConfig, ctx, ui) -> Attempt:
     try:
         bus_b = ctx.open_can(b)
         try:
+            _drain(bus_a)
+            _drain(bus_b)
             for tx_name, tx, rx_name, rx in ((a, bus_a, b, bus_b), (b, bus_b, a, bus_a)):
                 problem = _exchange(tx, rx, config.timeout_s)
                 if problem == "missing":
@@ -161,8 +177,9 @@ def run(config: CanConfig, ctx, ui) -> Attempt:
     for iface in hardware:
         state = _state(ctx, iface)
         details.append(f"{iface}: state {state}")
-        if state != "ERROR-ACTIVE":
-            return Attempt.fail(f"CAN: {iface} in error state {state}", details=details)
+        if state not in GOOD_STATES:
+            return Attempt.fail(f"CAN: {iface} in error state {state}. "
+                                "Check the CAN cable and termination, then retry.", details=details)
     return Attempt.ok(details=details)
 
 
