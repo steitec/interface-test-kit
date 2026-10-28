@@ -44,4 +44,4 @@ def fields(raw: dict, required: set[str], optional: dict[str, Any]) -> dict:
     return {**optional, **raw}
 
 
-from . import confirm, serial, usb  # noqa: E402,F401  (register themselves)
+from . import confirm, ethernet, serial, usb  # noqa: E402,F401  (register themselves)
