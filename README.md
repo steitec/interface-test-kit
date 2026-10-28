@@ -126,7 +126,7 @@ Exit codes: `0` PASS, `1` FAIL, `2` aborted or configuration error.
 
 ```yaml
 report_dir: /mnt/test-reports/itk   # network drive, mounted by the OS
-require_mount: true                 # an unmounted share counts as unreachable
+mount_point: /mnt/test-reports      # must be mounted, else the share counts as unreachable
 spool_dir: /var/lib/itk/spool       # reports wait here until `itk sync`
 profile_dir: /etc/itk/profiles
 name: EOL-STATION-1
@@ -135,7 +135,7 @@ ask_operator: false
 
 If the network drive is not reachable, the report is saved in `spool_dir`
 and the operator is told so. The next run, or `itk sync`, uploads it. With
-`require_mount: true`, a share that is not mounted is noticed instead of
+`mount_point` set, a share that is not mounted is noticed instead of
 quietly filling the empty mount-point folder on the local disk.
 
 ### Profiles

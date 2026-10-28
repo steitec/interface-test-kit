@@ -3,9 +3,9 @@
 
 # Network drive (mounted by the OS) where reports go.
 report_dir: /mnt/test-reports/itk
-# true: only accept report_dir if it is on a mounted filesystem, so an unmounted
-# share is noticed instead of filling the local disk.
-require_mount: true
+# Mount point of the network drive. If set, reports are only written there while it
+# is mounted, so an unmounted share is noticed instead of filling the local disk.
+mount_point: /mnt/test-reports
 # Reports wait here while the network drive is not reachable (itk sync uploads them).
 spool_dir: /var/lib/itk/spool
 # Profiles available on this station.

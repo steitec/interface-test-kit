@@ -18,12 +18,12 @@ class Station:
     profile_dir: Path = Path("/etc/itk/profiles")
     spool_dir: Path = Path("/var/lib/itk/spool")
     name: str = field(default_factory=socket.gethostname)
-    require_mount: bool = False
+    mount_point: Path | None = None  # if set: the share's mount point; must be mounted
     ask_operator: bool = False
 
 
-_PATHS = {"report_dir", "profile_dir", "spool_dir"}
-_BOOLS = {"require_mount", "ask_operator"}
+_PATHS = {"report_dir", "profile_dir", "spool_dir", "mount_point"}
+_BOOLS = {"ask_operator"}
 
 
 def load_station(path: Path) -> Station:

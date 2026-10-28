@@ -12,15 +12,15 @@ def test_station_defaults(tmp_path):
     assert st.report_dir == Path("/mnt/share/itk")
     assert st.profile_dir == Path("/etc/itk/profiles")
     assert st.spool_dir == Path("/var/lib/itk/spool")
-    assert st.name and not st.require_mount and not st.ask_operator
+    assert st.name and st.mount_point is None and not st.ask_operator
 
 
 def test_station_all_fields(tmp_path):
     path = tmp_path / "station.yaml"
     path.write_text("report_dir: r\nprofile_dir: p\nspool_dir: s\nname: EOL-1\n"
-                    "require_mount: true\nask_operator: true\n")
+                    "mount_point: /mnt/share\nask_operator: true\n")
     st = load_station(path)
-    assert st == Station(Path("r"), Path("p"), Path("s"), "EOL-1", True, True)
+    assert st == Station(Path("r"), Path("p"), Path("s"), "EOL-1", Path("/mnt/share"), True)
 
 
 @pytest.mark.parametrize("text,needle", [

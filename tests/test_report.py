@@ -82,14 +82,24 @@ def test_write_error_spools(tmp_path, monkeypatch):
     assert spooled and (path / "report.txt").exists()
 
 
-def test_require_mount_rejects_plain_dir(tmp_path, monkeypatch):
-    st = station(tmp_path, require_mount=True)
-    st.report_dir.mkdir()
-    # share not mounted: the folder sits on the root filesystem
-    monkeypatch.setattr(os.path, "ismount", lambda p: str(p) == "/")
+def test_mount_point_must_be_mounted(tmp_path, monkeypatch):
+    mount = tmp_path / "share"
+    st = station(tmp_path, report_dir=mount / "itk", mount_point=mount)
+    st.report_dir.mkdir(parents=True)
+    # share not mounted: the folder sits on a local filesystem (even one mounted at /data)
+    monkeypatch.setattr(os.path, "ismount", lambda p: str(p) in ("/", str(tmp_path.resolve())))
     assert not report_reachable(st)
-    monkeypatch.setattr(os.path, "ismount", lambda p: str(p) in ("/", str(st.report_dir.resolve())))
+    monkeypatch.setattr(os.path, "ismount", lambda p: str(p) in ("/", str(mount.resolve())))
     assert report_reachable(st)
+
+
+def test_report_dir_outside_mount_point_is_rejected(tmp_path, monkeypatch):
+    st = station(tmp_path, mount_point=tmp_path / "share")
+    (tmp_path / "share").mkdir()
+    st2 = station(tmp_path, report_dir=tmp_path / "elsewhere", mount_point=tmp_path / "share")
+    (tmp_path / "elsewhere").mkdir()
+    monkeypatch.setattr(os.path, "ismount", lambda p: True)
+    assert report_reachable(st) and not report_reachable(st2)
 
 
 def test_sync_moves_and_keeps_on_failure(tmp_path):

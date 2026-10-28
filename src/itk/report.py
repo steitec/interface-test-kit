@@ -32,11 +32,13 @@ def report_reachable(station: Station) -> bool:
     target = Path(station.report_dir)
     if not target.is_dir() or not os.access(target, os.W_OK | os.X_OK):
         return False
-    if station.require_mount:
-        p = target.resolve()
-        while not os.path.ismount(p):
-            p = p.parent
-        if p == Path("/"):
+    if station.mount_point is not None:
+        # An unmounted share leaves an empty local folder behind; writing there
+        # would put the report on the local disk without anyone noticing.
+        mount = Path(station.mount_point).resolve()
+        if not os.path.ismount(mount):
+            return False
+        if mount != target.resolve() and mount not in target.resolve().parents:
             return False
     return True
 
