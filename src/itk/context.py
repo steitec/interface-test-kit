@@ -33,6 +33,7 @@ class Context:
     open_serial: Callable[[str, int], Any] | None = None
     open_can: Callable[[str], Any] | None = None
     clock: Callable[[], float] = time.monotonic
+    sleep: Callable[[float], None] = time.sleep
     mode: str = "unit"
 
     def path(self, p: str) -> Path:

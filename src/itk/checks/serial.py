@@ -17,6 +17,9 @@ LOOPBACK_TYPES: dict[str, dict[str, tuple[str, ...]]] = {
     "data-only": {},
 }
 
+# USB-serial adapters report modem line changes over USB, several ms late.
+LINE_SETTLE_S = 0.05
+
 _REPAIR = ". Check the loopback plug; if it is fine, send the unit to repair."
 
 
@@ -120,7 +123,8 @@ def _check_data(link: SerialLink, config: SerialConfig, details: list[str]) -> t
     return None
 
 
-def _check_lines(link: SerialLink, wiring: dict[str, tuple[str, ...]], details: list[str]) -> list[str]:
+def _check_lines(link: SerialLink, wiring: dict[str, tuple[str, ...]], details: list[str],
+                 sleep) -> list[str]:
     broken: list[str] = []
     for out, inputs in wiring.items():
         for state in (True, False):
@@ -128,6 +132,7 @@ def _check_lines(link: SerialLink, wiring: dict[str, tuple[str, ...]], details: 
             for other in wiring:
                 if other != out:
                     link.set_line(other, not state)
+            sleep(LINE_SETTLE_S)
             for inp in inputs:
                 if link.get_line(inp) != state:
                     pair = f"{out}->{inp}"
@@ -153,7 +158,7 @@ def run(config: SerialConfig, ctx, ui) -> Attempt:
                 unit = f"{config.name}: data corrupted at {baud} baud{_REPAIR}"
             return Attempt.fail(ctx.say(unit, f"Loopback plug on {config.name} faulty or not plugged in"),
                                 details=details)
-        broken = _check_lines(link, LOOPBACK_TYPES[config.loopback], details)
+        broken = _check_lines(link, LOOPBACK_TYPES[config.loopback], details, ctx.sleep)
     finally:
         link.close()
     if broken:

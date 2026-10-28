@@ -132,3 +132,23 @@ def test_real_pyserial_on_pty(pty_echo):
     config = cfg(port=pty_echo, loopback="data-only", bauds=(115200,))
     attempt = SERIAL.run(config, Context(open_serial=open_pyserial), ScriptedUI([]))
     assert attempt.status == "PASS", attempt
+
+
+def test_lines_settle_before_reading():
+    events = []
+
+    class Logging(SimLoopback):
+        def set_line(self, name, state):
+            events.append("set")
+            super().set_line(name, state)
+
+        def get_line(self, name):
+            events.append("get")
+            return super().get_line(name)
+    sim = Logging(LOOPBACK_TYPES["9pin"])
+    ctx = Context(open_serial=lambda port, baud: sim, sleep=lambda s: events.append(f"sleep {s}"))
+    assert SERIAL.run(cfg(loopback="9pin"), ctx, ScriptedUI([])).status == "PASS"
+    # every read of the inputs comes after a settle delay
+    for i, e in enumerate(events):
+        if e == "get" and events[i - 1] != "get":
+            assert events[i - 1] == "sleep 0.05"
