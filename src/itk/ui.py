@@ -29,6 +29,12 @@ class ConsoleUI:
         self.stdout = stdout or sys.stdout
         isatty = getattr(self.stdout, "isatty", None)
         self.color = bool(isatty and isatty())
+        self._pending = False  # a "[ .. ] step" line is waiting for its result
+
+    def _break(self) -> None:
+        if self._pending:
+            self._write("\n")
+            self._pending = False
 
     def _write(self, text: str) -> None:
         self.stdout.write(text)
@@ -44,13 +50,16 @@ class ConsoleUI:
         return f"{_COLORS.get(status, '')}{text}{_RESET}" if self.color else text
 
     def info(self, text: str) -> None:
+        self._break()
         self._write(f"{text}\n")
 
     def ask_text(self, prompt: str) -> str:
+        self._break()
         self._write(prompt)
         return self._readline().strip()
 
     def ask_yes_no(self, prompt: str) -> bool:
+        self._break()
         while True:
             self._write(f"{prompt} [Y/N] ")
             answer = self._readline().strip().lower()
@@ -60,18 +69,24 @@ class ConsoleUI:
                 return False
 
     def wait_key(self, prompt: str) -> None:
+        self._break()
         self._write(f"{prompt} ")
         self._readline()
 
     def step_started(self, step: Step) -> None:
-        self._write(f"  ...    {step.name}\n")
+        if self.color:  # on a terminal, show the running step; its result overwrites the line
+            self._write(f"  [ .. ] {step.name}")
+            self._pending = True
 
     def step_finished(self, result: StepResult) -> None:
         tag = self._paint(result.status, f"[{result.status}]")
         note = " (passed after retry)" if result.passed_after_retry else ""
-        self._write(f"  {tag} {result.name:<16} {result.message}{note}\n")
+        start = "\r" if self.color else ""
+        self._pending = False
+        self._write(f"{start}  {tag} {result.name:<16} {result.message}{note}\n")
 
     def banner(self, status: str) -> None:
+        self._break()
         line = "=" * 40
         self._write("\n" + self._paint(status, f"{line}\n   RESULT: {status}\n{line}") + "\n")
 

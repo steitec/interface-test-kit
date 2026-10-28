@@ -1,0 +1,22 @@
+# Profile for `itk demo`: a simulated EPC-24 variant B panel PC.
+name: EPC-24 variant B (demo)
+version: 1
+detect: {dmi_product_name: EPC-24B}
+serial_number: {pattern: "^EPC-24-\\d{5}$"}
+setup: >-
+  Plug the loopback plugs into COM1 and COM2, the two test sticks into the
+  blue USB ports, the network cable into LAN1 and the CAN cable between CAN0 and CAN1.
+steps:
+  - {type: serial, name: Serial 1, port: /dev/ttyS0, loopback: 9pin-full, bauds: [9600, 115200]}
+  - {type: serial, name: Serial 2, port: /dev/ttyS1, loopback: 9pin}
+  - type: usb
+    name: USB
+    count: 2
+    ports: [1-1, 2-1]
+    size_mb: 8
+    min_write_mbs: 10
+    min_read_mbs: 20
+    min_speed_mbps: 5000
+  - {type: ethernet, name: LAN1, iface: eth0, speed: 1000, duplex: full, ping: 192.168.100.1}
+  - {type: can, name: CAN, pair: [can0, can1], bitrate: 500000}
+  - {type: confirm, name: Power LED, prompt: "Is the power LED green?"}

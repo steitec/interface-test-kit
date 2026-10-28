@@ -74,3 +74,9 @@ def test_unit_mode_does_not_ask_equipment_id():
     profile = make_profile(fake_step("Serial 1", "PASS", equipment="Loopback plug number"))
     results = run_steps(profile, Context(), ScriptedUI([]))
     assert results[0].equipment_id is None
+
+
+def test_retry_prompt_shows_the_failure_first():
+    ui = ScriptedUI([False])
+    run_step(fake_step("Serial 1", "FAIL"), Context(), ui, max_attempts=4)
+    assert f"ask_yes_no: device broken\n{RETRY_PROMPT}" in ui.log

@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import argparse
+from pathlib import Path
 
 from . import __version__
 from .profile import ProfileError, load_profile
@@ -56,6 +57,33 @@ def _session(args, mode: str) -> int:
     return _EXIT[run.status]
 
 
+def _demo(args) -> int:
+    import tempfile
+    from importlib import resources
+
+    from .runner import RETRY_PROMPT
+    from .session import run_session
+    from .sim.world import FAULTS, SERIAL_NUMBER, AutoUI, build_world
+    from .station import Station
+
+    if args.list_faults:
+        for name, text in FAULTS.items():
+            print(f"  {name:<16} {text}")
+        return 0
+    fault = None if args.fault == "none" else args.fault
+    profile = load_profile(Path(str(resources.files("itk"))) / "profiles" / "demo.yaml")
+    with tempfile.TemporaryDirectory(prefix="itk-demo-") as tmp:
+        root = Path(tmp)
+        out = Path(args.out)
+        out.mkdir(parents=True, exist_ok=True)
+        station = Station(report_dir=out, spool_dir=root / "spool", profile_dir=root, name="demo")
+        no_to = (RETRY_PROMPT,) + (("power LED",) if fault == "led_off" else ())
+        print(f"Simulated unit, fault: {args.fault}\n")
+        run = run_session(station, build_world(fault, root), AutoUI(SERIAL_NUMBER, no_to),
+                          profiles=[profile])
+    return _EXIT[run.status]
+
+
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(prog="itk", description=__doc__)
     parser.add_argument("--version", action="version", version=f"itk {__version__}")
@@ -73,6 +101,13 @@ def build_parser() -> argparse.ArgumentParser:
     p_self = sub.add_parser("selftest", help="check the test equipment on a reference unit")
     p_self.add_argument("--station", help=station_help)
 
+    from .sim.world import FAULTS
+    p_demo = sub.add_parser("demo", help="run a full session against a simulated unit")
+    p_demo.add_argument("--fault", default="none", choices=["none", *FAULTS], metavar="FAULT",
+                        help="inject a fault (see --list-faults)")
+    p_demo.add_argument("--list-faults", action="store_true", help="list the faults and exit")
+    p_demo.add_argument("--out", default="reports", help="report folder (default: reports)")
+
     p_sync = sub.add_parser("sync", help="upload reports saved locally while the network drive was down")
     p_sync.add_argument("--station", help=station_help)
     return parser
@@ -87,6 +122,8 @@ def main(argv: list[str] | None = None) -> int:
         return _session(args, "unit")
     if args.cmd == "selftest":
         return _session(args, "selftest")
+    if args.cmd == "demo":
+        return _demo(args)
     if args.cmd == "sync":
         return _sync(args.station)
     parser.print_help()

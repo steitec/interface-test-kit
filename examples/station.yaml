@@ -1,0 +1,16 @@
+# Station file: settings of one test station. Default location /etc/itk/station.yaml,
+# or point to it with --station or the ITK_STATION environment variable.
+
+# Network drive (mounted by the OS) where reports go.
+report_dir: /mnt/test-reports/itk
+# true: only accept report_dir if it is on a mounted filesystem, so an unmounted
+# share is noticed instead of filling the local disk.
+require_mount: true
+# Reports wait here while the network drive is not reachable (itk sync uploads them).
+spool_dir: /var/lib/itk/spool
+# Profiles available on this station.
+profile_dir: /etc/itk/profiles
+# Name in the report (default: host name).
+name: EOL-STATION-1
+# Ask the operator for their name at the start of each run.
+ask_operator: false

@@ -1,0 +1,50 @@
+# Profile for one product variant. Check it with: itk check-profile <file>
+name: EPC-24 variant B
+version: 3                      # raise when the test changes; it is stored in every report
+detect: {dmi_product_name: EPC-24B}   # optional: picked automatically on matching units
+serial_number: {pattern: "^EPC-24-\\d{5}$"}   # optional: reject typos and wrong scans
+max_attempts: 4                 # per step: a step passes when its last two attempts pass
+setup: >-
+  Plug the loopback plugs into COM1 and COM2, the two test sticks into the
+  blue USB ports, the network cable into LAN1 and the CAN cable between CAN0 and CAN1.
+
+steps:
+  # Serial port through a loopback plug. loopback: 9pin-full (RTS->CTS, DTR->DSR+CD+RI),
+  # 9pin (without RI) or data-only.
+  - type: serial
+    name: Serial 1
+    port: /dev/ttyS0
+    loopback: 9pin-full
+    bauds: [9600, 115200]
+  - type: serial
+    name: Serial 2
+    port: /dev/ttyS1
+    loopback: 9pin
+
+  # USB test sticks: only mounted sticks with a label starting with ITKTEST are used.
+  - type: usb
+    name: USB
+    count: 2
+    ports: [1-1, 2-1]           # optional: USB port names from sysfs, one stick each
+    size_mb: 64
+    min_write_mbs: 10
+    min_read_mbs: 20
+    min_speed_mbps: 5000        # 5000 = USB 3, 480 = USB 2
+
+  - type: ethernet
+    name: LAN1
+    iface: eth0
+    speed: 1000
+    duplex: full
+    ping: 192.168.100.1
+    max_loss_pct: 0
+
+  # Two CAN ports wired together; the bitrate is set on real CAN hardware (needs root).
+  - type: can
+    name: CAN
+    pair: [can0, can1]
+    bitrate: 500000
+
+  - type: confirm
+    name: Power LED
+    prompt: "Is the power LED green?"

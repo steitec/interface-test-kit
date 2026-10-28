@@ -72,3 +72,27 @@ def test_run_command_missing_and_ok():
 
 def test_run_command_timeout():
     assert run_command(["sleep", "5"], timeout=0.2).returncode == 124
+
+
+def test_console_no_started_line_when_not_tty():
+    from itk.profile import Step
+    ui, out = console("")
+    ui.step_started(Step("usb", "USB", "usb", None, None, 1))
+    assert out.getvalue() == ""
+
+
+class TTY(io.StringIO):
+    def isatty(self):
+        return True
+
+
+def test_console_tty_overwrites_started_line_and_breaks_for_prompts():
+    from itk.profile import Step
+    out = TTY()
+    ui = ConsoleUI(stdin=io.StringIO("y\n"), stdout=out)
+    ui.step_started(Step("led", "Power LED", "confirm", None, None, 1))
+    ui.ask_yes_no("Is the power LED green?")
+    ui.step_finished(StepResult("led", "Power LED", "confirm", "PASS", [Attempt.ok()]))
+    text = out.getvalue()
+    assert "Power LED\nIs the power LED green? [Y/N] " in text
+    assert text.endswith("\r  \033[32m[PASS]\033[0m Power LED        \n")

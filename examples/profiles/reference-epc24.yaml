@@ -1,0 +1,12 @@
+# Reference profile for `itk selftest`: run on a known-good EPC-24 to check the
+# test equipment itself (loopback plugs, sticks, cables).
+name: Reference EPC-24
+version: 1
+reference: true
+setup: Use the reference unit. Plug in the equipment you want to check.
+steps:
+  - {type: serial, name: Serial 1, port: /dev/ttyS0, loopback: 9pin-full, equipment: Loopback plug number}
+  - {type: serial, name: Serial 2, port: /dev/ttyS1, loopback: 9pin, equipment: Loopback plug number}
+  - {type: usb, name: USB, count: 2, size_mb: 64, min_write_mbs: 10, min_read_mbs: 20}
+  - {type: ethernet, name: LAN1, iface: eth0, speed: 1000, ping: 192.168.100.1, equipment: Cable number}
+  - {type: can, name: CAN, pair: [can0, can1], bitrate: 500000, equipment: CAN cable number}

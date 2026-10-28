@@ -86,9 +86,21 @@ def render_text(run: RunResult) -> str:
     return "\n".join(lines) + "\n"
 
 
+def _new_dir(path: Path) -> Path:
+    """Create ``path``, or ``path-2``, ``path-3``... so no earlier report is overwritten."""
+    path.parent.mkdir(parents=True, exist_ok=True)
+    for n in range(1, 1000):
+        candidate = path if n == 1 else path.with_name(f"{path.name}-{n}")
+        try:
+            candidate.mkdir()
+            return candidate
+        except FileExistsError:
+            continue
+    raise OSError(f"too many reports named {path.name}")
+
+
 def _write_into(base: Path, run: RunResult) -> Path:
-    path = base / _relative(run)
-    path.mkdir(parents=True, exist_ok=True)
+    path = _new_dir(base / _relative(run))
     (path / "result.json").write_text(json.dumps(run.to_dict(), indent=2) + "\n")
     (path / "report.txt").write_text(render_text(run))
     return path
@@ -117,8 +129,8 @@ def sync_spool(station: Station) -> list[Path]:
         return []
     moved = []
     for src in runs:
-        dest = Path(station.report_dir) / src.relative_to(spool)
         try:
+            dest = _new_dir(Path(station.report_dir) / src.relative_to(spool))
             shutil.copytree(src, dest, dirs_exist_ok=True)
         except OSError:
             continue

@@ -33,7 +33,7 @@ def run_step(step: Step, ctx: Context, ui: UI, max_attempts: int) -> StepResult:
     attempts = [_attempt(step, ctx, ui)]
     while not _passed(attempts) and len(attempts) < max_attempts:
         if attempts[-1].status == "FAIL":
-            if not ui.ask_yes_no(RETRY_PROMPT):
+            if not ui.ask_yes_no(f"{attempts[-1].message}\n{RETRY_PROMPT}"):
                 break
         else:
             ui.info(CONFIRM_INFO)

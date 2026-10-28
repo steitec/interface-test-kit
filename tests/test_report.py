@@ -128,3 +128,12 @@ def test_sync_cli(tmp_path, capsys):
     st.report_dir.mkdir()
     assert main(["sync", "--station", str(tmp_path / "station.yaml")]) == 0
     assert str(st.report_dir) in capsys.readouterr().out
+
+
+def test_same_second_runs_do_not_overwrite(tmp_path):
+    st = station(tmp_path)
+    st.report_dir.mkdir()
+    first, _ = write_run(make_run(status="FAIL"), st)
+    second, _ = write_run(make_run(status="PASS"), st)
+    assert first != second and second.name == first.name + "-2"
+    assert json.loads((first / "result.json").read_text())["status"] == "FAIL"
