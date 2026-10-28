@@ -17,7 +17,8 @@ def folder_name(run: RunResult) -> str:
     if run.mode == "selftest":
         name = f"selftest_{run.station}_{stamp}"
     else:
-        parts = [run.serial_number] + ([run.rma] if run.rma else []) + [stamp]
+        # a scanner glitch can deliver hundreds of characters; keep names well below 255 bytes
+        parts = [run.serial_number[:60]] + ([run.rma[:40]] if run.rma else []) + [stamp]
         name = "_".join(parts)
     name = re.sub(r"[^A-Za-z0-9._-]", "_", name)
     return "_" + name if name.startswith(".") else name

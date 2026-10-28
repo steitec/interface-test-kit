@@ -147,3 +147,10 @@ def test_same_second_runs_do_not_overwrite(tmp_path):
     second, _ = write_run(make_run(status="PASS"), st)
     assert first != second and second.name == first.name + "-2"
     assert json.loads((first / "result.json").read_text())["status"] == "FAIL"
+
+
+def test_very_long_serial_is_shortened(tmp_path):
+    st = station(tmp_path)
+    st.report_dir.mkdir()
+    path, spooled = write_run(make_run(serial="X" * 400), st)
+    assert not spooled and len(path.name) <= 120

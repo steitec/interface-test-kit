@@ -80,3 +80,10 @@ def test_retry_prompt_shows_the_failure_first():
     ui = ScriptedUI([False])
     run_step(fake_step("Serial 1", "FAIL"), Context(), ui, max_attempts=4)
     assert f"ask_yes_no: device broken\n{RETRY_PROMPT}" in ui.log
+
+
+def test_unstable_step_keeps_the_failure_reason():
+    ui = ScriptedUI([True, True])
+    result = run_step(fake_step("Serial 1", "FAIL", "PASS", "FAIL", "PASS"), Context(), ui, max_attempts=4)
+    assert result.status == "FAIL"
+    assert result.message == "device broken (not stable: failed again on retry)"

@@ -41,6 +41,7 @@ def _choose(ui: UI, candidates: list[Profile]) -> Profile:
         answer = ui.ask_text("Choose the profile number: ")
         if answer.isdigit() and 1 <= int(answer) <= len(candidates):
             return candidates[int(answer) - 1]
+        ui.info(f"Enter a number from 1 to {len(candidates)}.")
 
 
 def _select_profile(ui: UI, ctx: Context, candidates: list[Profile]) -> Profile:

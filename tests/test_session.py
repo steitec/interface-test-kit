@@ -257,3 +257,12 @@ def test_cli_profile_error_exit_2(tmp_path, monkeypatch, capsys):
 def test_cli_missing_station(tmp_path, capsys):
     assert main(["run", "--station", str(tmp_path / "nope.yaml")]) == 2
     assert "Error:" in capsys.readouterr().out
+
+
+def test_wrong_profile_number_gets_a_hint(tmp_path):
+    share(tmp_path)
+    st = setup_station(tmp_path, {"a.yaml": detect_profile("EPC-24 A", "X"),
+                                  "b.yaml": detect_profile("EPC-24 B", "Y")})
+    ui = ScriptedUI(["SN1", "9", "2", True])
+    run_session(st, Context(root=tmp_path), ui)
+    assert "info: Enter a number from 1 to 2." in ui.log

@@ -60,7 +60,13 @@ class StepResult:
 
     @property
     def message(self) -> str:
-        return self.attempts[-1].message if self.attempts else ""
+        if not self.attempts:
+            return ""
+        last = self.attempts[-1]
+        if self.status == "FAIL" and last.status == "PASS":
+            failed = next(a for a in reversed(self.attempts) if a.status == "FAIL")
+            return f"{failed.message} (not stable: failed again on retry)"
+        return last.message
 
     @property
     def passed_after_retry(self) -> bool:
