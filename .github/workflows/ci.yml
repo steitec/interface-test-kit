@@ -14,5 +14,12 @@ jobs:
         with:
           python-version: ${{ matrix.python-version }}
       - run: pip install -e ".[dev]"
+      - name: Virtual CAN interface (optional)
+        continue-on-error: true
+        run: |
+          sudo apt-get install -y linux-modules-extra-$(uname -r)
+          sudo modprobe vcan
+          sudo ip link add vcan0 type vcan
+          sudo ip link set up vcan0
       - run: pytest -v
       - run: itk demo
