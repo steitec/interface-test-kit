@@ -42,18 +42,24 @@ def run_step(step: Step, ctx: Context, ui: UI, max_attempts: int) -> StepResult:
     return StepResult(step.id, step.name, step.type, status, attempts)
 
 
-def run_steps(profile: Profile, ctx: Context, ui: UI,
-              only: list[str] | None = None) -> list[StepResult]:
-    steps = profile.steps
-    if only:
-        wanted = [o.lower() for o in only]
-        known = {s.id.lower() for s in steps}
-        for o in wanted:
-            if o not in known:
-                raise ValueError(f"unknown step id: {o}")
-        steps = [s for s in steps if s.id.lower() in wanted]
-    results = []
-    for step in steps:
+def select_steps(profile: Profile, only: list[str] | None = None) -> list[Step]:
+    """The profile's steps, limited to the ids in ``only`` (case-insensitive)."""
+    if not only:
+        return list(profile.steps)
+    wanted = [o.lower() for o in only]
+    known = {s.id.lower() for s in profile.steps}
+    for o in wanted:
+        if o not in known:
+            raise ValueError(f"unknown step id: {o}")
+    return [s for s in profile.steps if s.id.lower() in wanted]
+
+
+def run_steps(profile: Profile, ctx: Context, ui: UI, only: list[str] | None = None,
+              results: list[StepResult] | None = None) -> list[StepResult]:
+    """Finished steps are appended to ``results`` as they complete, so a caller
+    still has them when the operator aborts with Ctrl+C."""
+    results = [] if results is None else results
+    for step in select_steps(profile, only):
         equipment_id = None
         if ctx.mode == "selftest" and step.equipment:
             equipment_id = ui.ask_text(f"{step.equipment}: ")
