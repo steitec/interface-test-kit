@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import os
 import socket
 from dataclasses import dataclass, field
 from pathlib import Path
@@ -46,3 +47,8 @@ def load_station(path: Path) -> Station:
         else:
             kwargs[key] = str(value)
     return Station(**kwargs)
+
+
+def station_path(arg: str | None) -> Path:
+    """--station, else $ITK_STATION, else /etc/itk/station.yaml."""
+    return Path(arg or os.environ.get("ITK_STATION") or DEFAULT_STATION)
