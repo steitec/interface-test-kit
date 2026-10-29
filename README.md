@@ -1,5 +1,10 @@
 # interface-test-kit
 
+[![CI](https://github.com/steitec/interface-test-kit/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/steitec/interface-test-kit/actions/workflows/ci.yml)
+[![PyPI](https://img.shields.io/pypi/v/interface-test-kit)](https://pypi.org/project/interface-test-kit/)
+[![Python](https://img.shields.io/pypi/pyversions/interface-test-kit)](https://pypi.org/project/interface-test-kit/)
+[![License](https://img.shields.io/pypi/l/interface-test-kit)](https://github.com/steitec/interface-test-kit/blob/main/LICENSE)
+
 Interface test software that runs **on** a Linux embedded or panel PC and
 checks its serial ports (including the handshake lines), USB ports, Ethernet
 and CAN. The interfaces are fitted with test equipment: loopback plugs,
