@@ -3,7 +3,6 @@
 from __future__ import annotations
 
 import itertools
-import time
 from pathlib import Path
 
 from ..checks.serial import LOOPBACK_TYPES
@@ -63,13 +62,35 @@ def build_world(fault: str | None, root: Path) -> Context:
         return SimLoopback(LOOPBACK_TYPES["9pin"])
 
     network = SimCanNetwork(drop={"can0"} if fault == "can_no_ack" else None)
-    if fault == "usb_slow":
-        ticks = itertools.count()
-        clock = lambda: float(next(ticks))  # every reading one second later  # noqa: E731
-    else:
-        clock = time.monotonic
+    # The USB check times a write and a read-back per stick. In the demo the "sticks" are
+    # folders on the local disk, so a real clock would report the disk (thousands of MB/s).
+    # Instead the clock steps through the times a real stick would need, in check order.
+    rates = [STICK_MBS["slow" if fault == "usb_slow" else 5000]]
+    if len(sticks) > 1:
+        rates.append(STICK_MBS["slow" if fault == "usb_slow" else speed])
+    clock = _stick_clock(rates)
     runner = FakeRunner({"lsblk -J": lsblk_result(sticks), "ping -c": _ping})
     return Context(root=root, run=runner, open_serial=open_serial, open_can=network.open, clock=clock)
+
+
+# Typical (write, read) MB/s of a test stick on a USB 3 port, on a USB 2 port, and a worn one.
+STICK_MBS: dict[int | str, tuple[float, float]] = {5000: (42.0, 138.0), 480: (17.5, 34.0), "slow": (4.2, 9.5)}
+DEMO_SIZE_MB = 8  # size_mb of the USB step in profiles/demo.yaml
+
+
+def _stick_clock(rates: list[tuple[float, float]]):
+    """A clock for the demo: per stick write-start, write-end, read-start, read-end."""
+    steps = []
+    for write, read in rates:
+        steps += [0.05, DEMO_SIZE_MB / write, 0.05, DEMO_SIZE_MB / read]
+    increments = itertools.chain(steps, itertools.repeat(0.05))
+    now = 0.0
+
+    def clock() -> float:
+        nonlocal now
+        now += next(increments)
+        return now
+    return clock
 
 
 class AutoUI(ConsoleUI):

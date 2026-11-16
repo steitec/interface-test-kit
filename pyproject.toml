@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "interface-test-kit"
-version = "0.1.0"
+version = "0.1.1"
 description = "Operator-guided interface test for Linux embedded and panel PCs: serial with handshake, USB, Ethernet and CAN, with per-variant profiles and reports"
 readme = "README.md"
 license = "MIT"

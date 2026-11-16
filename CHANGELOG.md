@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.1.1 – 2026-11-16
+
+- `itk demo`: the USB step now reports throughput a real test stick could reach (42/138 MB/s
+  write/read on USB 3, 17.5/34 MB/s on USB 2). It used to time the local disk behind the
+  simulated sticks and showed up to 4000 MB/s on a 5 Gbit/s port. Real runs were not affected.
+
 ## 0.1.0 – 2026-10-28
 
 First version.
