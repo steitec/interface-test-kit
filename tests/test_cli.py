@@ -6,4 +6,4 @@ from interface_test_kit.cli import main
 def test_version(capsys):
     with pytest.raises(SystemExit) as e:
         main(["--version"])
-    assert e.value.code == 0 and "0.1.0" in capsys.readouterr().out
+    assert e.value.code == 0 and "0.1.1" in capsys.readouterr().out
